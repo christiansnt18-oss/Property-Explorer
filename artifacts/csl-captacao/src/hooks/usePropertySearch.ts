@@ -9,6 +9,7 @@ interface UsePropertySearchResult {
   isLoading: boolean;
   error: Error | null;
   hasSearched: boolean;
+  lastUpdatedAt: Date | null;
   search: () => Promise<void>;
 }
 
@@ -20,6 +21,7 @@ export function usePropertySearch(): UsePropertySearchResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
 
   const search = useCallback(async () => {
     setIsLoading(true);
@@ -33,6 +35,7 @@ export function usePropertySearch(): UsePropertySearchResult {
       ]);
 
       setResults([...quintoAndar, ...auxiliadora, ...guarida]);
+      setLastUpdatedAt(new Date());
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Erro ao buscar imóveis"));
     } finally {
@@ -41,5 +44,5 @@ export function usePropertySearch(): UsePropertySearchResult {
     }
   }, []);
 
-  return { results, isLoading, error, hasSearched, search };
+  return { results, isLoading, error, hasSearched, lastUpdatedAt, search };
 }

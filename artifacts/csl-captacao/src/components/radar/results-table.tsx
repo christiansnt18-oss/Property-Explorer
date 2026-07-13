@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ExternalLink } from "lucide-react";
 import type { Property } from "@/types/property";
+import { ImobiliariaBadge } from "@/components/radar/imobiliaria-badge";
 
 const COLUMNS = ["Imobiliária", "Tipo", "Bairro", "Cidade", "Preço", "Publicado", "Ação"];
 
@@ -77,7 +78,9 @@ export function ResultsTable({ properties, isLoading = false, hasSearched = fals
             ) : (
               properties.map((property) => (
                 <TableRow key={property.id}>
-                  <TableCell className="text-sm font-medium text-foreground">{property.imobiliaria}</TableCell>
+                  <TableCell>
+                    <ImobiliariaBadge nome={property.imobiliaria} />
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{property.tipo}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{property.bairro}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{property.cidade}</TableCell>
@@ -88,8 +91,9 @@ export function ResultsTable({ properties, isLoading = false, hasSearched = fals
                     {formatPublicadoEm(property.publicadoEm)}
                   </TableCell>
                   <TableCell>
-                    <Button asChild size="sm" variant="outline">
+                    <Button asChild size="sm" variant="default">
                       <a href={property.link} target="_blank" rel="noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" />
                         Abrir anúncio
                       </a>
                     </Button>
