@@ -1,20 +1,21 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 
-interface StatCardData {
-  label: string;
-  value: string | number;
-  accent?: boolean;
+interface StatCardsProps {
+  novos: number;
+  quintoAndar: number;
+  auxiliadora: number;
+  guarida: number;
 }
 
-const stats: StatCardData[] = [
-  { label: "Novos desde a última consulta", value: 0, accent: true },
-  { label: "QuintoAndar", value: 0 },
-  { label: "Auxiliadora Predial", value: 0 },
-  { label: "Guarida", value: 0 },
-];
+export function StatCards({ novos, quintoAndar, auxiliadora, guarida }: StatCardsProps) {
+  const stats = [
+    { label: "Novos desde a última consulta", value: novos, accent: true },
+    { label: "QuintoAndar", value: quintoAndar },
+    { label: "Auxiliadora Predial", value: auxiliadora },
+    { label: "Guarida", value: guarida },
+  ];
 
-export function StatCards() {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (

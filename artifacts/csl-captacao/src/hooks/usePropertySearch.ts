@@ -8,15 +8,18 @@ interface UsePropertySearchResult {
   results: Property[];
   isLoading: boolean;
   error: Error | null;
+  hasSearched: boolean;
   search: () => Promise<void>;
 }
 
 // Preparado para futuras integrações com QuintoAndar, Auxiliadora Predial e Guarida.
-// Nenhuma busca real é executada ainda — cada serviço retorna uma lista vazia por enquanto.
+// Por enquanto, cada serviço retorna dados fictícios (mock); quando as integrações reais
+// forem implementadas, esta função continuará com a mesma assinatura e comportamento.
 export function usePropertySearch(): UsePropertySearchResult {
   const [results, setResults] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const search = useCallback(async () => {
     setIsLoading(true);
@@ -34,8 +37,9 @@ export function usePropertySearch(): UsePropertySearchResult {
       setError(err instanceof Error ? err : new Error("Erro ao buscar imóveis"));
     } finally {
       setIsLoading(false);
+      setHasSearched(true);
     }
   }, []);
 
-  return { results, isLoading, error, search };
+  return { results, isLoading, error, hasSearched, search };
 }
