@@ -1,8 +1,11 @@
 import type { Property } from "@/types/property";
+import type { SearchResult } from "@/types/search";
+
+const SOURCE = "Guarida";
 
 // Dados fictícios (mock) enquanto a integração real com a Guarida não existe.
 // Quando a integração for implementada, esta função deve manter a mesma assinatura
-// e apenas trocar a origem dos dados (chamada HTTP / scraping) pelo array abaixo.
+// (Promise<SearchResult>) e apenas trocar a origem dos dados pelo array abaixo.
 const MOCK_PROPERTIES: Property[] = [
   {
     id: "guarida-1",
@@ -12,7 +15,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 2400,
     quartos: 1,
     tipo: "Apartamento",
-    imobiliaria: "Guarida",
+    imobiliaria: SOURCE,
     link: "https://www.guarida.com.br/imovel/fake-1",
     publicadoEm: "2026-07-08",
   },
@@ -24,7 +27,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 5200,
     quartos: 4,
     tipo: "Casa",
-    imobiliaria: "Guarida",
+    imobiliaria: SOURCE,
     link: "https://www.guarida.com.br/imovel/fake-2",
     publicadoEm: "2026-07-09",
   },
@@ -36,7 +39,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 1500,
     quartos: 0,
     tipo: "Terreno",
-    imobiliaria: "Guarida",
+    imobiliaria: SOURCE,
     link: "https://www.guarida.com.br/imovel/fake-3",
     publicadoEm: "2026-07-10",
   },
@@ -48,7 +51,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 2800,
     quartos: 2,
     tipo: "Apartamento",
-    imobiliaria: "Guarida",
+    imobiliaria: SOURCE,
     link: "https://www.guarida.com.br/imovel/fake-4",
     publicadoEm: "2026-07-11",
   },
@@ -60,12 +63,36 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 6100,
     quartos: 3,
     tipo: "Cobertura",
-    imobiliaria: "Guarida",
+    imobiliaria: SOURCE,
     link: "https://www.guarida.com.br/imovel/fake-5",
     publicadoEm: "2026-07-12",
   },
 ];
 
-export async function searchProperties(): Promise<Property[]> {
-  return MOCK_PROPERTIES;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Simula, de forma fictícia, que este serviço pode falhar — útil para validar o
+// tratamento de erro individual da arquitetura antes de existir integração real.
+const SIMULATED_FAILURE_RATE = 0.35;
+
+export async function searchProperties(): Promise<SearchResult> {
+  const start = performance.now();
+  await delay(400 + Math.random() * 600);
+
+  if (Math.random() < SIMULATED_FAILURE_RATE) {
+    return {
+      success: false,
+      source: SOURCE,
+      properties: [],
+      executionTime: (performance.now() - start) / 1000,
+      error: "Falha simulada ao consultar a Guarida",
+    };
+  }
+
+  return {
+    success: true,
+    source: SOURCE,
+    properties: MOCK_PROPERTIES,
+    executionTime: (performance.now() - start) / 1000,
+  };
 }

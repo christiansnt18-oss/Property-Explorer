@@ -4,13 +4,14 @@ import { Search, Loader2, RefreshCw } from "lucide-react";
 import { StatCards } from "@/components/radar/stat-cards";
 import { Filters } from "@/components/radar/filters";
 import { ResultsTable } from "@/components/radar/results-table";
+import { ServiceStatus } from "@/components/radar/service-status";
 import { usePropertySearch } from "@/hooks/usePropertySearch";
 
 // Valor fictício enquanto não existe cálculo real de imóveis publicados nas últimas 2 horas.
 const MOCK_ULTIMAS_DUAS_HORAS = 4;
 
 export function Home() {
-  const { results, isLoading, hasSearched, lastUpdatedAt, search } = usePropertySearch();
+  const { results, serviceStatuses, isLoading, hasSearched, lastUpdatedAt, search } = usePropertySearch();
 
   const novos = results.length;
   const quintoAndar = results.filter((p) => p.imobiliaria === "QuintoAndar").length;
@@ -57,6 +58,8 @@ export function Home() {
         ultimaAtualizacao={lastUpdatedAt}
         ultimasDuasHoras={hasSearched ? MOCK_ULTIMAS_DUAS_HORAS : 0}
       />
+
+      <ServiceStatus statuses={serviceStatuses} />
 
       <Filters />
 

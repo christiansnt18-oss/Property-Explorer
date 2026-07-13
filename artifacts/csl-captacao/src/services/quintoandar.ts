@@ -1,8 +1,11 @@
 import type { Property } from "@/types/property";
+import type { SearchResult } from "@/types/search";
+
+const SOURCE = "QuintoAndar";
 
 // Dados fictícios (mock) enquanto a integração real com o QuintoAndar não existe.
 // Quando a integração for implementada, esta função deve manter a mesma assinatura
-// e apenas trocar a origem dos dados (chamada HTTP / scraping) pelo array abaixo.
+// (Promise<SearchResult>) e apenas trocar a origem dos dados pelo array abaixo.
 const MOCK_PROPERTIES: Property[] = [
   {
     id: "quintoandar-1",
@@ -12,7 +15,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 3200,
     quartos: 2,
     tipo: "Apartamento",
-    imobiliaria: "QuintoAndar",
+    imobiliaria: SOURCE,
     link: "https://www.quintoandar.com.br/imovel/fake-1",
     publicadoEm: "2026-07-10",
   },
@@ -24,7 +27,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 1800,
     quartos: 1,
     tipo: "Studio",
-    imobiliaria: "QuintoAndar",
+    imobiliaria: SOURCE,
     link: "https://www.quintoandar.com.br/imovel/fake-2",
     publicadoEm: "2026-07-11",
   },
@@ -36,7 +39,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 4500,
     quartos: 3,
     tipo: "Casa",
-    imobiliaria: "QuintoAndar",
+    imobiliaria: SOURCE,
     link: "https://www.quintoandar.com.br/imovel/fake-3",
     publicadoEm: "2026-07-11",
   },
@@ -48,7 +51,7 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 6800,
     quartos: 3,
     tipo: "Cobertura",
-    imobiliaria: "QuintoAndar",
+    imobiliaria: SOURCE,
     link: "https://www.quintoandar.com.br/imovel/fake-4",
     publicadoEm: "2026-07-12",
   },
@@ -60,12 +63,22 @@ const MOCK_PROPERTIES: Property[] = [
     preco: 2100,
     quartos: 1,
     tipo: "Apartamento",
-    imobiliaria: "QuintoAndar",
+    imobiliaria: SOURCE,
     link: "https://www.quintoandar.com.br/imovel/fake-5",
     publicadoEm: "2026-07-12",
   },
 ];
 
-export async function searchProperties(): Promise<Property[]> {
-  return MOCK_PROPERTIES;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export async function searchProperties(): Promise<SearchResult> {
+  const start = performance.now();
+  await delay(300 + Math.random() * 400);
+
+  return {
+    success: true,
+    source: SOURCE,
+    properties: MOCK_PROPERTIES,
+    executionTime: (performance.now() - start) / 1000,
+  };
 }

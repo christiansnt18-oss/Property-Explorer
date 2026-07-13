@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
 import type { Property } from "@/types/property";
-import { searchProperties as searchQuintoAndar } from "@/services/quintoandar";
-import { searchProperties as searchAuxiliadora } from "@/services/auxiliadora";
-import { searchProperties as searchGuarida } from "@/services/guarida";
+import type { SearchResult } from "@/types/search";
+import { SearchProvider } from "@/services/searchProvider";
 
 interface UsePropertySearchResult {
   results: Property[];
+  serviceStatuses: SearchResult[];
   isLoading: boolean;
   error: Error | null;
   hasSearched: boolean;
@@ -14,10 +14,11 @@ interface UsePropertySearchResult {
 }
 
 // Preparado para futuras integrações com QuintoAndar, Auxiliadora Predial e Guarida.
-// Por enquanto, cada serviço retorna dados fictícios (mock); quando as integrações reais
-// forem implementadas, esta função continuará com a mesma assinatura e comportamento.
+// Toda a orquestração das buscas (timeout, erro individual por serviço) é responsabilidade
+// do SearchProvider; este hook apenas expõe o resultado agregado para a interface.
 export function usePropertySearch(): UsePropertySearchResult {
   const [results, setResults] = useState<Property[]>([]);
+  const [serviceStatuses, setServiceStatuses] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
@@ -28,15 +29,14 @@ export function usePropertySearch(): UsePropertySearchResult {
     setError(null);
 
     try {
-      const [quintoAndar, auxiliadora, guarida] = await Promise.all([
-        searchQuintoAndar(),
-        searchAuxiliadora(),
-        searchGuarida(),
-      ]);
+      const searchResults = await SearchProvider.searchAll();
 
-      setResults([...quintoAndar, ...auxiliadora, ...guarida]);
+      setServiceStatuses(searchResults);
+      setResults(searchResults.flatMap((result) => result.properties));
       setLastUpdatedAt(new Date());
     } catch (err) {
+      // SearchProvider já trata falhas por serviço individualmente; este catch cobre
+      // apenas um erro inesperado na própria orquestração.
       setError(err instanceof Error ? err : new Error("Erro ao buscar imóveis"));
     } finally {
       setIsLoading(false);
@@ -44,5 +44,5 @@ export function usePropertySearch(): UsePropertySearchResult {
     }
   }, []);
 
-  return { results, isLoading, error, hasSearched, lastUpdatedAt, search };
+  return { results, serviceStatuses, isLoading, error, hasSearched, lastUpdatedAt, search };
 }
