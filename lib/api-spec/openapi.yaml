@@ -14,6 +14,8 @@ tags:
     description: Property capture operations (rental captures in Porto Alegre)
   - name: dashboard
     description: Dashboard aggregate operations
+  - name: providers
+    description: External property provider integrations status
 paths:
   /healthz:
     get:
@@ -202,6 +204,19 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ZonaCount"
+  /providers/status:
+    get:
+      operationId: getProvidersStatus
+      tags: [providers]
+      summary: Provider integrations status
+      description: Returns the online/offline status and response time of each external property provider (QuintoAndar, Auxiliadora, Guarida)
+      responses:
+        "200":
+          description: Providers status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProvidersStatusResponse"
 components:
   schemas:
     HealthStatus:
@@ -435,3 +450,26 @@ components:
           $ref: "#/components/schemas/Zona"
         count:
           type: integer
+    ProviderStatus:
+      type: object
+      required:
+        - name
+        - online
+        - responseTime
+      properties:
+        name:
+          type: string
+        online:
+          type: boolean
+        responseTime:
+          type: number
+          description: Response time of the last check, in seconds
+    ProvidersStatusResponse:
+      type: object
+      required:
+        - providers
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProviderStatus"
