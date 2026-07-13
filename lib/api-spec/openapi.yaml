@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: properties
+    description: Property capture operations (rental captures in Porto Alegre)
+  - name: dashboard
+    description: Dashboard aggregate operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,180 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /properties:
+    get:
+      operationId: listProperties
+      tags: [properties]
+      summary: List properties
+      description: Returns properties, optionally filtered by zona, bairro, max monthly rent and property type
+      parameters:
+        - name: zona
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Zona"
+        - name: neighborhood
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Bairro"
+        - name: maxPrice
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: propertyType
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PropertyType"
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+    post:
+      operationId: createProperty
+      tags: [properties]
+      summary: Create a property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+  /properties/{id}:
+    get:
+      operationId: getProperty
+      tags: [properties]
+      summary: Get a property by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Property found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProperty
+      tags: [properties]
+      summary: Update a property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PropertyUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Property"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteProperty
+      tags: [properties]
+      summary: Delete a property
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Dashboard summary
+      description: Aggregate counts used on the dashboard overview
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /dashboard/recent-properties:
+    get:
+      operationId: getRecentProperties
+      tags: [dashboard]
+      summary: Recently captured properties
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recent properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Property"
+  /dashboard/by-type:
+    get:
+      operationId: getPropertyCountsByType
+      tags: [dashboard]
+      summary: Property counts grouped by type
+      responses:
+        "200":
+          description: Counts by property type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PropertyTypeCount"
+  /dashboard/by-zone:
+    get:
+      operationId: getPropertyCountsByZone
+      tags: [dashboard]
+      summary: Property counts grouped by zona
+      responses:
+        "200":
+          description: Counts by zona
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ZonaCount"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +211,227 @@ components:
           type: string
       required:
         - status
-
+    PropertyType:
+      type: string
+      enum:
+        - apartamento
+        - casa
+        - terreno
+        - comercial
+        - cobertura
+        - rural
+    PropertyStatus:
+      type: string
+      enum:
+        - captado
+        - em_negociacao
+        - disponivel
+        - alugado
+    Zona:
+      type: string
+      description: Fixed capture zone within Porto Alegre
+      enum:
+        - centro_menino_deus
+        - moinhos_floresta
+    Bairro:
+      type: string
+      description: Fixed list of neighborhoods allowed for capture, grouped by Zona
+      enum:
+        - centro
+        - cidade_baixa
+        - farroupilha
+        - bom_fim
+        - independencia
+        - santana
+        - praia_de_belas
+        - menino_deus
+        - azenha
+        - santa_tereza
+        - medianeira
+        - santo_antonio
+        - floresta
+        - sao_geraldo
+        - higienopolis
+        - sao_joao
+        - santa_maria_goretti
+        - jardim_floresta
+        - jardim_sao_pedro
+        - humaita
+        - navegantes
+        - anchieta
+        - farrapos
+        - moinhos_de_vento
+        - auxiliadora
+        - montserrat
+        - rio_branco
+        - bela_vista
+        - santa_cecilia
+    Property:
+      type: object
+      required:
+        - id
+        - title
+        - zona
+        - neighborhood
+        - address
+        - price
+        - propertyType
+        - status
+        - bedrooms
+        - bathrooms
+        - areaM2
+        - ownerName
+        - ownerPhone
+        - createdAt
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        zona:
+          $ref: "#/components/schemas/Zona"
+        neighborhood:
+          $ref: "#/components/schemas/Bairro"
+        address:
+          type: string
+        price:
+          type: number
+          description: Monthly rent value in BRL
+        propertyType:
+          $ref: "#/components/schemas/PropertyType"
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        areaM2:
+          type: number
+        ownerName:
+          type: string
+        ownerPhone:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+    PropertyInput:
+      type: object
+      required:
+        - title
+        - zona
+        - neighborhood
+        - address
+        - price
+        - propertyType
+        - status
+        - bedrooms
+        - bathrooms
+        - areaM2
+        - ownerName
+        - ownerPhone
+      properties:
+        title:
+          type: string
+          minLength: 1
+        zona:
+          $ref: "#/components/schemas/Zona"
+        neighborhood:
+          $ref: "#/components/schemas/Bairro"
+        address:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          description: Monthly rent value in BRL
+        propertyType:
+          $ref: "#/components/schemas/PropertyType"
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        areaM2:
+          type: number
+        ownerName:
+          type: string
+          minLength: 1
+        ownerPhone:
+          type: string
+          minLength: 1
+        notes:
+          type: string
+    PropertyUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        zona:
+          $ref: "#/components/schemas/Zona"
+        neighborhood:
+          $ref: "#/components/schemas/Bairro"
+        address:
+          type: string
+          minLength: 1
+        price:
+          type: number
+          description: Monthly rent value in BRL
+        propertyType:
+          $ref: "#/components/schemas/PropertyType"
+        status:
+          $ref: "#/components/schemas/PropertyStatus"
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        areaM2:
+          type: number
+        ownerName:
+          type: string
+          minLength: 1
+        ownerPhone:
+          type: string
+          minLength: 1
+        notes:
+          type: string
+    DashboardSummary:
+      type: object
+      required:
+        - totalProperties
+        - capturedThisMonth
+        - availableForRent
+        - averageRent
+      properties:
+        totalProperties:
+          type: integer
+        capturedThisMonth:
+          type: integer
+        availableForRent:
+          type: integer
+          description: Count of properties currently available for rent
+        averageRent:
+          type: number
+          description: Average monthly rent value across all captured properties
+    PropertyTypeCount:
+      type: object
+      required:
+        - propertyType
+        - count
+      properties:
+        propertyType:
+          $ref: "#/components/schemas/PropertyType"
+        count:
+          type: integer
+    ZonaCount:
+      type: object
+      required:
+        - zona
+        - count
+      properties:
+        zona:
+          $ref: "#/components/schemas/Zona"
+        count:
+          type: integer

@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "CSL Captação"
+version = "1.0.0"
+id = "artifacts/csl-captacao"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18829
+
+[services.development]
+run = "pnpm --filter @workspace/csl-captacao run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/csl-captacao", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/csl-captacao/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18829"
+BASE_PATH = "/"

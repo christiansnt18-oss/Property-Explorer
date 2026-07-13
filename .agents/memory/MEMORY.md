@@ -1,0 +1,2 @@
+- [Drizzle numeric columns return strings](drizzle-numeric-string-coercion.md) — pg driver returns `numeric` columns as strings; Zod response schemas expecting `number` will 500 unless coerced before validating.
+- [api-client-react generated type imports](api-client-react-type-imports.md) — import generated enum types from the package root, not the internal `src/generated/...` path.
