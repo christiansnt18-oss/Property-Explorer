@@ -1,12 +1,10 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
-import propertiesRouter from "./properties";
-import dashboardRouter from "./dashboard";
+import radarRouter from "./radar";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
-router.use(propertiesRouter);
-router.use(dashboardRouter);
+router.use(radarRouter);
 
 export default router;
