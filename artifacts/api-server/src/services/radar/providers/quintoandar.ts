@@ -1,8 +1,14 @@
 import axios from "axios";
+import * as cheerio from "cheerio";
 
-async function teste() {
-  const url =
-    "https://www.quintoandar.com.br/alugar/imovel/menino-deus-porto-alegre-rs-brasil";
+export async function buscarQuintoAndar(bairro: string) {
+  const slug = bairro
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-");
+
+  const url = `https://www.quintoandar.com.br/alugar/imovel/${slug}-porto-alegre-rs-brasil`;
 
   const response = await axios.get(url, {
     headers: {
@@ -11,9 +17,46 @@ async function teste() {
     },
   });
 
-  console.log("STATUS:", response.status);
-  console.log("TÍTULO:", response.data.match(/<title>(.*?)<\/title>/)?.[1]);
-  console.log(response.data.substring(0, 6000));
-}
+  const $ = cheerio.load(response.data);
 
-teste();
+  const scripts = $('script[type="application/ld+json"]');
+
+  let lista: any[] = [];
+
+  scripts.each((_, element) => {
+    try {
+      const json = JSON.parse($(element).html() || "");
+
+      if (json["@graph"] && Array.isArray(json["@graph"])) {
+        const itemList = json["@graph"].find(
+          (item: any) => item["@type"] === "ItemList"
+        );
+
+        if (itemList?.itemListElement) {
+          lista = itemList.itemListElement;
+        }
+      }
+    } catch {
+      // ignora JSON inválido
+    }
+  });
+
+  return lista.map((item: any) => {
+    const imovel = item.item;
+
+    const id =
+      imovel?.url?.match(/\/imovel\/(\d+)/)?.[1] ?? null;
+
+    return {
+      id,
+      titulo: imovel?.name,
+      url: imovel?.url,
+      valor: imovel?.offers?.price,
+      quartos: imovel?.about?.numberOfBedrooms,
+      banheiros: imovel?.about?.numberOfFullBathrooms,
+      area: imovel?.about?.floorSize?.value,
+      endereco: imovel?.about?.address?.streetAddress,
+      bairro,
+    };
+  });
+}
