@@ -1,0 +1,21 @@
+{
+  "intervalo": 120,
+  "bairros": [
+    {
+      "nome": "Menino Deus",
+      "placeId": "ChIJLxQKfth4GZURqYb6fQv4kR0"
+    },
+    {
+      "nome": "Rio Branco",
+      "placeId": "ChIJF2LQbtx4GZURnQj4z0Q1g3M"
+    },
+    {
+      "nome": "Bom Fim",
+      "placeId": "ChIJj3e2H914GZURrYxj6Yx4qM8"
+    },
+    {
+      "nome": "Cidade Baixa",
+      "placeId": "ChIJoRwLwv94GZUR7zmALAtDhB4"
+    }
+  ]
+}

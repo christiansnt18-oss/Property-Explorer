@@ -36,11 +36,13 @@ export async function iniciarMonitor() {
 
         console.log(`\n🚨 ${resultado.novos} NOVO(S) IMÓVEL(IS) EM ${bairro}\n`);
 
-        resultado.imoveisNovos.forEach((imovel, index) => {
+        resultado.imoveisNovos.forEach((imovel: any, index) => {
           console.log("══════════════════════════════════════════════");
           console.log(`🏠 Imóvel ${index + 1}`);
           console.log("");
-          console.log(`📍 Bairro: ${bairro}`);
+          console.log(`📍 Bairro pesquisado: ${bairro}`);
+          console.log(`🏙️ Cidade: ${imovel.cidade}`);
+          console.log(`🗺️ Estado: ${imovel.estado}`);
           console.log(`📝 ${imovel.titulo}`);
           console.log(`📐 Área: ${imovel.area} m²`);
           console.log(`🛏️ Quartos: ${imovel.quartos}`);

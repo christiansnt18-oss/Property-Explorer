@@ -1,62 +1,100 @@
 import axios from "axios";
-import * as cheerio from "cheerio";
+
+const URL =
+  "https://apigw.prod.quintoandar.com.br/house-listing-search/v3/search/list";
 
 export async function buscarQuintoAndar(bairro: string) {
-  const slug = bairro
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "-");
-
-  const url = `https://www.quintoandar.com.br/alugar/imovel/${slug}-porto-alegre-rs-brasil`;
-
-  const response = await axios.get(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138.0 Safari/537.36",
-    },
-  });
-
-  const $ = cheerio.load(response.data);
-
-  const scripts = $('script[type="application/ld+json"]');
-
-  let lista: any[] = [];
-
-  scripts.each((_, element) => {
-    try {
-      const json = JSON.parse($(element).html() || "");
-
-      if (json["@graph"] && Array.isArray(json["@graph"])) {
-        const itemList = json["@graph"].find(
-          (item: any) => item["@type"] === "ItemList"
-        );
-
-        if (itemList?.itemListElement) {
-          lista = itemList.itemListElement;
+  const response = await axios.post(
+    URL,
+    {
+      slug: "porto-alegre-rs-brasil",
+      topics: [],
+      fields: [
+        "id",
+        "coverImage",
+        "rent",
+        "totalCost",
+        "salePrice",
+        "iptuPlusCondominium",
+        "area",
+        "imageList",
+        "address",
+        "regionName",
+        "city",
+        "visitStatus",
+        "activeSpecialConditions",
+        "type",
+        "forRent",
+        "forSale",
+        "bedrooms",
+        "parkingSpaces",
+        "suites",
+        "neighbourhood",
+        "bathrooms",
+        "isFurnished",
+        "installations",
+        "amenities",
+        "shortRentDescription",
+        "shortSaleDescription",
+        "listingTags"
+      ],
+      filters: {
+        unknownSlugs: [],
+        enableFlexibleSearch: true,
+        businessContext: "RENT"
+      },
+      locationDescriptions: [
+        {
+          description: "porto-alegre-rs-brasil"
         }
+      ],
+      pagination: {
+        pageSize: 100,
+        offset: 0
       }
-    } catch {
-      // ignora JSON inválido
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/138.0 Safari/537.36"
+      }
     }
-  });
+  );
 
-  return lista.map((item: any) => {
-    const imovel = item.item;
+  const hits = response.data?.hits?.hits ?? [];
 
-    const id =
-      imovel?.url?.match(/\/imovel\/(\d+)/)?.[1] ?? null;
+  const imoveis = hits
+    .filter((item: any) => {
+      const source = item._source;
 
-    return {
-      id,
-      titulo: imovel?.name,
-      url: imovel?.url,
-      valor: imovel?.offers?.price,
-      quartos: imovel?.about?.numberOfBedrooms,
-      banheiros: imovel?.about?.numberOfFullBathrooms,
-      area: imovel?.about?.floorSize?.value,
-      endereco: imovel?.about?.address?.streetAddress,
-      bairro,
-    };
-  });
+      return (
+        source?.city === "Porto Alegre" &&
+        source?.neighbourhood?.toLowerCase() === bairro.toLowerCase()
+      );
+    })
+    .map((item: any) => {
+      const source = item._source;
+
+      return {
+        id: String(source.id),
+        rent: source.rent ?? 0,
+        totalCost: source.totalCost ?? 0,
+        area: source.area ?? 0,
+        bedrooms: source.bedrooms ?? 0,
+        bathrooms: source.bathrooms ?? 0,
+        parkingSpaces: source.parkingSpaces ?? 0,
+        isFurnished: source.isFurnished ?? false,
+        address: source.address ?? "",
+        neighbourhood: source.neighbourhood ?? "",
+        city: source.city ?? "",
+        amenities: source.amenities ?? [],
+        listingTags: item.fields?.listingTags ?? [],
+        link: `https://www.quintoandar.com.br/imovel/${source.id}`
+      };
+    });
+
+  console.log(`🏠 ${bairro}: ${imoveis.length} imóveis encontrados`);
+
+  return imoveis;
 }
